@@ -172,8 +172,18 @@ export const fetchVerse = async (reference: string, version: string): Promise<Bi
         }
     }
     
+    let apiReference = reference.trim();
+    // A reference is likely for a whole chapter if it doesn't contain a ':'
+    // and the last part of it is a number (the chapter number).
+    const isChapterOnlyRequest = !apiReference.includes(':') && !isNaN(parseInt(apiReference.split(' ').pop() || '', 10));
+
+    if (isChapterOnlyRequest) {
+        // The API doesn't support chapter-only requests, so we request a large range of verses.
+        apiReference = `${apiReference}:1-200`;
+    }
+
     // The bible-api.com expects spaces to be replaced with '+' instead of URL-encoded as '%20'.
-    const encodedReference = reference.trim().replace(/\s+/g, '+');
+    const encodedReference = apiReference.replace(/\s+/g, '+');
     const url = `${API_BASE_URL}${encodedReference}?translation=${version}`;
 
     try {
@@ -187,6 +197,12 @@ export const fetchVerse = async (reference: string, version: string): Promise<Bi
         }
 
         const data: BibleApiResponse = await response.json();
+        
+        if (isChapterOnlyRequest) {
+            // The API returns a verse range in the reference (e.g., "John 1:1-51").
+            // We'll change it back to what the user searched for (e.g., "John 1").
+            data.reference = reference.trim();
+        }
         
         return data;
 

@@ -4,6 +4,8 @@ import { fetchVerse, BibleApiResponse, BibleVerse, searchLocalBibleByKeyword, se
 // Fix: Import DOWNLOADABLE_BIBLES to access the full data for downloading.
 import { DownloadableBible, BIBLE_VERSION_META, DOWNLOADABLE_BIBLES } from './services/bibleData';
 import * as dbService from './services/dbService';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 
 // --- Icons ---
@@ -101,6 +103,13 @@ const SettingsIcon = () => (
 const CloudDownloadIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
       <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+    </svg>
+);
+
+const ExportIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.28 8.42a.75.75 0 10-1.06 1.06l4.25 4.25a.75.75 0 001.06 0l4.25-4.25a.75.75 0 10-1.06-1.06l-2.94 2.939V2.75z" />
+        <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
     </svg>
 );
 
@@ -270,6 +279,7 @@ function App() {
     const isProgrammaticChangeRef = useRef(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const rawNotesRef = useRef(rawNotes);
+    const organizedNotesRef = useRef<HTMLDivElement>(null);
 
     // Update rawNotesRef whenever rawNotes changes so the auto-save interval has the latest value
     useEffect(() => {
@@ -721,6 +731,68 @@ function App() {
         }
     };
 
+    const handleExportToPdf = async () => {
+        const input = organizedNotesRef.current;
+        if (!input || !organizedNotes.trim()) {
+            showToast("No organized notes to export.");
+            return;
+        }
+
+        showToast("Generating PDF...");
+
+        try {
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const originalBackgroundColor = input.style.backgroundColor;
+
+            // Set a solid background for consistent capture
+            input.style.backgroundColor = isDarkMode ? '#1e293b' : '#ffffff'; // slate-800 or white
+
+            const canvas = await html2canvas(input, {
+                scale: 2, // Increase resolution for better quality
+                useCORS: true,
+                backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+            });
+            
+            // Restore original style after capture
+            input.style.backgroundColor = originalBackgroundColor;
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'p',
+                unit: 'px',
+                format: 'a4',
+                hotfixes: ['px_scaling'],
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            const imgProps= pdf.getImageProperties(imgData);
+            const ratio = imgProps.width / pdfWidth;
+            const imgHeight = imgProps.height / ratio;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+            heightLeft -= pdfHeight;
+
+            while (heightLeft > 0) {
+                position = -heightLeft;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                heightLeft -= pdfHeight;
+            }
+
+            const date = new Date().toISOString().split('T')[0];
+            pdf.save(`sermon-notes-${date}.pdf`);
+
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            showToast("Failed to generate PDF.");
+        }
+    };
+
     // --- Settings / Bible Download Functions ---
     const updateDownloadedVersions = async () => {
         const versions = await dbService.getDownloadedVersions();
@@ -981,13 +1053,25 @@ function App() {
                     {notesError && <p className="text-red-500 dark:text-red-400 mt-2">{notesError}</p>}
                     
                     {organizedNotes && (
-                        <div className="mt-6 border-t pt-4 border-slate-200 dark:border-slate-700 flex-grow">
-                             <h3 className="text-xl font-semibold mb-2">Organized Notes:</h3>
-                             <div 
-                                className="prose dark:prose-invert max-w-none p-4 bg-slate-50 dark:bg-slate-900/50 rounded-md h-full overflow-y-auto" 
+                        <div className="mt-6 border-t pt-4 border-slate-200 dark:border-slate-700 flex-grow flex flex-col">
+                            <div className="flex justify-between items-center mb-2">
+                                <h3 className="text-xl font-semibold">Organized Notes:</h3>
+                                <button
+                                    onClick={handleExportToPdf}
+                                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-600 dark:bg-slate-700 text-white rounded-md hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors"
+                                    title="Export as PDF"
+                                    aria-label="Export notes to PDF"
+                                >
+                                    <ExportIcon />
+                                    <span>Export</span>
+                                </button>
+                            </div>
+                            <div 
+                                ref={organizedNotesRef}
+                                className="prose dark:prose-invert max-w-none p-4 bg-slate-50 dark:bg-slate-900/50 rounded-md flex-grow overflow-y-auto" 
                                 dangerouslySetInnerHTML={renderMarkdown(organizedNotes)}
                                 onClick={handleOrganizedNotesClick}
-                             ></div>
+                            ></div>
                         </div>
                     )}
                 </section>
