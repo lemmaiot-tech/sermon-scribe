@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sermon Scribe - AI Notes for Nigerian Churches | Neka.ng</title>
+
+    <!-- PWA & Themeing -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#008751" />
+    <link rel="apple-touch-icon" href="/neka-fav.png" />
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Sermon Scribe: An AI-powered note-taking app for church sermons. Automatically correct, organize, and structure your notes. A product of neka.ng for the Nigerian Christian Faith community."/>
+    <meta name="keywords" content="sermon notes, church notes, AI note taker, Bible study, Christian, Nigeria, Neka NG, scripture, preaching, gospel, church app, sermon transcription"/>
+    <meta name="author" content="Neka.ng"/>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="https://sermon-scribe.neka.ng"/>
+    <meta property="og:title" content="Sermon Scribe - AI Notes for Nigerian Churches | Neka.ng"/>
+    <meta property="og:description" content="Transform your church notes with AI. Sermon Scribe helps you organize, correct, and find scripture in your sermon notes effortlessly."/>
+    <meta property="og:image" content="/neka-fav.png"/>
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image"/>
+    <meta property="twitter:url" content="https://sermon-scribe.neka.ng"/>
+    <meta property="twitter:title" content="Sermon Scribe - AI Notes for Nigerian Churches | Neka.ng"/>
+    <meta property="twitter:description" content="Transform your church notes with AI. Sermon Scribe helps you organize, correct, and find scripture in your sermon notes effortlessly."/>
+    <meta property="twitter:image" content="/neka-fav.png"/>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'nigerian-green': '#008751',
+            },
+            keyframes: {
+              'fade-in-out': {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '10%': { opacity: '1', transform: 'translateY(0)' },
+                '90%': { opacity: '1', transform: 'translateY(0)' },
+                '100%': { opacity: '0', transform: 'translateY(20px)' },
+              }
+            },
+            animation: {
+              'fade-in-out': 'fade-in-out 3s ease-in-out forwards',
+            }
+          }
+        }
+      }
+    </script>
+    <script type="importmap">
+      {
+        "imports": {
+          "react/": "https://aistudiocdn.com/react@^19.2.0/",
+          "react": "https://aistudiocdn.com/react@^19.2.0",
+          "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+          "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0"
+        }
+      }
+    </script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-50 dark:bg-slate-900">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }).catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

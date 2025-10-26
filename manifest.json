@@ -1,0 +1,23 @@
+{
+  "name": "Sermon Scribe by Neka.ng",
+  "short_name": "Sermon Scribe",
+  "description": "AI-powered note-taking for church sermons. A product of neka.ng for the Nigerian Christian Faith community.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#008751",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/neka-fav.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/neka-fav.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}

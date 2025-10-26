@@ -1,0 +1,5 @@
+{
+  "name": "Sermon Scribe - Offline",
+  "description": "An AI-powered note-taking application for church sermons. It automatically corrects, organizes, and structures your notes by topic and scripture, while preserving your original voice.",
+  "requestFramePermissions": []
+}
